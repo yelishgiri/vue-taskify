@@ -20,7 +20,7 @@ A modern task management system with secure authentication and role-based access
 
 ## 🛠 Tech Stack
 
-- **Frontend**: Vue 3 + Vue Router + Pinia
+- **Frontend**: Vue 3 + Vue Router
 - **Backend**: Node.js + Express
 - **Database**: MySQL
 - **Authentication**: JWT
