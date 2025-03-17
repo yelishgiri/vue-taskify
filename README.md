@@ -42,6 +42,21 @@ cd backend
 npm install
 
 ```
+### 5. Create MySQL Database
+
+Create MySQL Schema Database
+```bash
+cd backend
+schema.sql
+```
+### 6. Update The Database Information In ENV File While Locally Running The Server
+
+
+### 7. Create An Account With User Name And Password
+
+### 8. Login And Explore The Features Of Task Manager
+
+
 
 
 
