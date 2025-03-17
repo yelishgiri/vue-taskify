@@ -1,7 +1,7 @@
 var express = require("express");
 var cors = require("cors");
 var bodyParser = require("body-parser");
-var connection = require("./config/database");  // Make sure the correct path is used
+var connection = require("./database");  
 var authRoutes = require("./routes/auth");
 var taskRoutes = require("./routes/tasks");
 
