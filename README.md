@@ -39,14 +39,14 @@ A modern task management system with secure authentication and role-based access
 
 
 
-### 1. Clone the Repository  
+### Clone the Repository  
 ```bash
 git clone https://github.com/yelishgiri/task-manager.git
 cd task-manager
 ```
 
 
-### 2. Setting Up The Front End
+### Setting Up The Front End
 ```bash
 cd frontend
 npm install
@@ -56,24 +56,34 @@ npm run dev
 The frontend should be live at this point and in the sign up through vue router view
 
 
-### 3. Setting Up The Back End
+### Setting Up The Back End
 ```bash
 cd backend
 npm install
 
 ```
-### 4. Create MySQL Database
-
+### Create MySQL Database
 Create MySQL Schema Database
 ```bash
-cd backend
-schema.sql
+mysql -u [username] -p < schema.sql
 ```
-### 5. Update The Database Information In ENV File While Locally Running The Server
 
+### Set Up Env Variable
+Configure environment variables
+Create .env in /backend:
+env
 
-### 6. Create An Account With User Name And Password
-
-### 7. Login And Explore The Features Of Task Manager
+```bash
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=yourpassword
+DB_NAME=task_manager
+JWT_SECRET=your_jwt_secret
+PORT=3000
+```
+### Run The Server
+```bash
+node server.js
+```
 
 
