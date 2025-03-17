@@ -74,16 +74,29 @@ Create .env in /backend:
 env
 
 ```bash
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=yourpassword
-DB_NAME=task_manager
-JWT_SECRET=your_jwt_secret
-PORT=3000
+DB_HOST="localhost"
+DB_NAME="task_manager"
+DB_USER="root"
+DB_PASSWORD="your-own-password-for-l"
+SECRET_KEY=c9981e3ab59707072b1dd744ac716bf9d93029b2ca1aca2fa6e7a0f5fa5efcd4
 ```
 ### Run The Server
 ```bash
 node server.js
 ```
 
+### Register An Account
+Username: yelish
+Password: yelish
+
+### Login With That Account
+Username: yelish
+Password: yelish
+
+### Explore The Features
+Create, Read And Delete Tasks
+
+
+If you have any problems starting the project: Please email me at:
+yelish.giri1@gmail.com
 
