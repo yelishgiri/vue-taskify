@@ -1,182 +1,197 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { onMounted } from 'vue';
+import axios from 'axios';
 
-// Using local storage on homepage at first to test features
-// will add database later
+const tasks = ref([]);
+const newTaskText = ref('');
+const filter = ref('all');
 
+const apiUrl = 'http://localhost:3000/tasks';
 
+const token = localStorage.getItem('token'); 
 
-// defining variables
-const tasks = ref([])
-const newTaskText = ref('')
-const filter = ref('all')
-
-
-
-// when the app is mounted to homepage display tasks
-// will be mounted after user successfully logins
-
-onMounted(() => {
-    const savedTasks = localStorage.getItem('tasks')
-    if(savedTasks){
-        tasks.value = JSON.parse(savedTasks)
+onMounted(async () => {
+    try {
+        const response = await axios.get(apiUrl, {
+            headers: {
+                Authorization: `Bearer ${token}`, 
+            }
+        });
+        tasks.value = response.data;
+    } catch (err) {
+        console.error("Failed to load tasks:", err);
     }
-    else {
-        tasks.value = [
-      { id: 1, text: 'Learn Vue.js', completed: false },
-      { id: 2, text: 'Complete Full Stack Coding Assessment', completed: false },
-      { id: 3, text: 'Submit before 12:00pm', completed: false }
-    ]
+});
+
+const saveTasks = async () => {
+    try {
+        await axios.post(apiUrl, { tasks: tasks.value }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        });
+    } catch (err) {
+        console.error("Failed to save tasks:", err);
     }
-})
+};
 
-
-// need to add database logic later
-const saveTasks = () => {
-    localStorage.setItem('tasks', JSON.stringify(tasks.value))
-}
-
-
-//filtering feature for tasks
-const filteredTasks = computed(() => {
-    if(filter.value == 'active') {
-        return tasks.value.filter(task => !task.completed)
-    }
-    else if(filter.value == 'completed'){
-        return tasks.value.filter(task => task.completed)
-    }
-    return tasks.value
-})
-
-const remainingCount = computed(() => {
-    return tasks.value.filter(task => !task.completed).length
-})
-
-
-// Logic for adding new task
-// using js max func to determine the highest task id if task exist otherwise just assigning 1
-const addTask = () => {
-    if(newTaskText.value.trim()) {
+const addTask = async () => {
+    if (newTaskText.value.trim()) {
         const newId = tasks.value.length ? Math.max(...tasks.value.map(t => t.id)) + 1 : 1;
-        tasks.value.push({
+        const newTask = {
             id: newId,
             text: newTaskText.value.trim(),
             completed: false
-        })
-        newTaskText.value = ''
-        saveTasks()
+        };
+        
+        try {
+            await axios.post(apiUrl, newTask, {
+                headers: {
+                    Authorization: `Bearer ${token}`, 
+                }
+            });
+            tasks.value.push(newTask);
+        } catch (err) {
+            console.error("Failed to add task:", err);
+        }
+        
+        newTaskText.value = '';
     }
-}
+};
 
-const toggleTask = (task) => {
-    task.completed = !task.completed
-    saveTasks()
-}
+const toggleTask = async (task) => {
+    task.completed = !task.completed;
+    try {
+        await axios.put(`${apiUrl}/${task.id}`, { completed: task.completed }, {
+            headers: {
+                Authorization: `Bearer ${token}`, 
+            }
+        });
+    } catch (err) {
+        console.error("Failed to update task:", err);
+    }
+};
 
-const deleteTask = (taskId) => {
-    const index = tasks.value.findIndex(task => task.id === taskId)
-    if(index !== -1)
-    tasks.value.splice(index,1)
-    saveTasks();
-}
+const deleteTask = async (taskId) => {
+    const index = tasks.value.findIndex(task => task.id === taskId);
+    if (index !== -1) {
+        try {
+            await axios.delete(`${apiUrl}/${taskId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+            tasks.value.splice(index, 1);
+        } catch (err) {
+            console.error("Failed to delete task:", err);
+        }
+    }
+};
 
+const clearCompleted = async () => {
+    try {
+        await axios.delete(`${apiUrl}/completed`, {
+            headers: {
+                Authorization: `Bearer ${token}`, 
+            }
+        });
+        tasks.value = tasks.value.filter(task => !task.completed);
+    } catch (err) {
+        console.error("Failed to clear completed tasks:", err);
+    }
+};
 
-const clearCompleted = () => {
-    tasks.value = tasks.value.filter(task => !task.completed)
-    saveTasks();
-}
+const remainingCount = computed(() => tasks.value.filter(task => !task.completed).length);
 
-
-
-
-
+const filteredTasks = computed(() => {
+    if (filter.value === 'active') {
+        return tasks.value.filter(task => !task.completed);
+    } else if (filter.value === 'completed') {
+        return tasks.value.filter(task => task.completed);
+    }
+    return tasks.value;
+});
 </script>
 
 <template>
-       <div class="task-manager">
-      <header>
-        <h1>Task Manager</h1>
-        <p>Organize your tasks efficiently</p>
-      </header>
-      <div class="add-task-container">
-        <form @submit.prevent="addTask">
-          <input
-            v-model="newTaskText"
-            type="text"
-            placeholder="Add a new task..."
-            aria-label="New task"
-          />
-          <button type="submit" aria-label="Add task">
-            Add Task
-          </button>
-        </form>
-      </div>
+  <div class="task-manager">
+    <header>
+      <h1>Task Manager</h1>
+      <p>Organize your tasks efficiently</p>
+    </header>
+    <div class="add-task-container">
+      <form @submit.prevent="addTask">
+        <input
+          v-model="newTaskText"
+          type="text"
+          placeholder="Add a new task..."
+          aria-label="New task"
+        />
+        <button type="submit" aria-label="Add task">
+          Add Task
+        </button>
+      </form>
+    </div>
 
-      <div class="task-list-container">
-        <div class="task-filters">
-          <div class="task-count">
-            {{ remainingCount }} tasks remaining
-          </div>
-          <div class="filter-buttons">
-            <button
-              @click="filter = 'all'"
-              :class="{ active: filter === 'all' }"
-            >
-              All
-            </button>
-            <button
-              @click="filter = 'active'"
-              :class="{ active: filter === 'active' }"
-            >
-              Active
-            </button>
-            <button
-              @click="filter = 'completed'"
-              :class="{ active: filter === 'completed' }"
-            >
-              Completed
-            </button>
-          </div>
+    <div class="task-list-container">
+      <div class="task-filters">
+        <div class="task-count">
+          {{ remainingCount }} tasks remaining
+        </div>
+        <div class="filter-buttons">
           <button
-            @click="clearCompleted"
-            class="clear-completed"
+            @click="filter = 'all'"
+            :class="{ active: filter === 'all' }"
           >
-            Clear completed
+            All
+          </button>
+          <button
+            @click="filter = 'active'"
+            :class="{ active: filter === 'active' }"
+          >
+            Active
+          </button>
+          <button
+            @click="filter = 'completed'"
+            :class="{ active: filter === 'completed' }"
+          >
+            Completed
           </button>
         </div>
+        <button
+          @click="clearCompleted"
+          class="clear-completed"
+        >
+          Clear completed
+        </button>
+      </div>
 
-        <ul class="task-list" role="list" aria-label="Task list">
-          <li v-if="filteredTasks.length === 0" class="empty-state">
-            No tasks to display
-          </li>
-          <li
-            v-for="task in filteredTasks"
-            :key="task.id"
-            class="task-item"
+      <ul class="task-list" role="list" aria-label="Task list">
+        <li v-if="filteredTasks.length === 0" class="empty-state">
+          No tasks to display
+        </li>
+        <li
+          v-for="task in filteredTasks"
+          :key="task.id"
+          class="task-item"
+        >
+          <div class="task-content">
+            <input type="checkbox" :checked="task.completed" @change="toggleTask(task)"  :id="`task-${task.id}`" />
+            <label :for="`task-${task.id}`" :class="{ completed: task.completed }">{{ task.text }}
+</label>
+          </div>
+          <button
+            @click="deleteTask(task.id)"
+            aria-label="Delete task"
+            class="delete-button"
           >
-            <div class="task-content">
-              <input
-                type="checkbox"
-                :checked="task.completed"
-                @change="toggleTask(task)"
-                :id="`task-${task.id}`"
-              />
-              <label :for="`task-${task.id}`" :class="{ completed: task.completed }">
-                {{ task.text }}
-              </label>
-            </div>
-            <button
-              @click="deleteTask(task.id)"
-              aria-label="Delete task"
-              class="delete-button"
-            >
-              Delete
-            </button>
-          </li>
-        </ul>
-      </div>
-      </div>
+            Delete
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
 </template>
 
 <style scoped>
